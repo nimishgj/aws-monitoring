@@ -5,6 +5,14 @@ set -e
 
 CONFIG_FILE=${1:-"configs/config.yaml"}
 
+# If default config doesn't exist, try example config
+if [ ! -f "${CONFIG_FILE}" ] && [ "${CONFIG_FILE}" = "configs/config.yaml" ]; then
+    if [ -f "configs/config.example.yaml" ]; then
+        CONFIG_FILE="configs/config.example.yaml"
+        echo "📝 Using example config for validation: ${CONFIG_FILE}"
+    fi
+fi
+
 echo "🔍 Validating configuration file: ${CONFIG_FILE}"
 
 # Check if config file exists
