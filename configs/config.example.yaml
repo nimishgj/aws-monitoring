@@ -1,0 +1,53 @@
+# Example configuration for AWS Monitor
+# Copy this file to config.yaml and update with your values
+
+enabled_regions:
+  - us-east-1
+  - us-west-2
+
+aws:
+  access_key_id: "your_access_key_here"
+  secret_access_key: "your_secret_key_here"
+  default_region: us-east-1
+  max_retries: 3
+  timeout: 30s
+
+otel:
+  collector_endpoint: "http://otel-collector:4317"
+  service_name: "aws-monitor"
+  insecure: true
+  batch_timeout: 5s
+  batch_size: 512
+
+metrics:
+  ec2:
+    enabled: true
+    collection_interval: 300s
+  rds:
+    enabled: true
+    collection_interval: 300s
+  s3:
+    enabled: false
+    collection_interval: 600s
+  lambda:
+    enabled: true
+    collection_interval: 300s
+  ebs:
+    enabled: true
+    collection_interval: 300s
+  elb:
+    enabled: true
+    collection_interval: 300s
+  vpc:
+    enabled: true
+    collection_interval: 600s
+
+global:
+  log_level: "info"
+  log_format: "json"
+  health_check_port: 8080
+  max_concurrent_workers: 10
+  max_error_count: 5
+  error_reset_interval: 300s
+  metric_buffer_size: 1000
+  export_timeout: 30s

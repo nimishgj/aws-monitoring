@@ -1,0 +1,13 @@
+# Example override file for local development
+# Copy to docker-compose.override.yml and customize
+
+version: '3.8'
+
+services:
+  aws-monitor:
+    volumes:
+      # Mount your actual config file
+      - ./configs/config.yaml:/app/configs/config.yaml:ro
+    environment:
+      # Override for development
+      - LOG_LEVEL=debug
