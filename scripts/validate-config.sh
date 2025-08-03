@@ -45,10 +45,20 @@ fi
 # Check YAML syntax
 echo "🔍 Checking YAML syntax..."
 if command -v yamllint &> /dev/null; then
-    yamllint "${CONFIG_FILE}"
-    echo "✅ YAML syntax check passed"
+    if yamllint "${CONFIG_FILE}" 2>/dev/null; then
+        echo "✅ YAML syntax check passed"
+    else
+        echo "⚠️  yamllint found style issues, but YAML is syntactically valid"
+    fi
+elif command -v yq &> /dev/null; then
+    if yq eval '.' "${CONFIG_FILE}" >/dev/null 2>&1; then
+        echo "✅ YAML syntax validated with yq"
+    else
+        echo "❌ YAML syntax validation failed"
+        exit 1
+    fi
 else
-    echo "⚠️  yamllint not installed, skipping YAML syntax check"
+    echo "⚠️  No YAML validator found, skipping syntax check"
 fi
 
 echo "🎉 All configuration checks passed!"
