@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -9,7 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"aws-monitoring/internal/aws"
 	"aws-monitoring/internal/config"
+	"aws-monitoring/internal/health"
 	"aws-monitoring/pkg/logger"
 )
 
@@ -107,11 +110,45 @@ func main() {
 		logger.Int("health_port", cfg.Global.HealthCheckPort),
 	)
 
-	// TODO: Initialize and start the actual application components
-	// - AWS clients
+	// Initialize AWS clients
+	awsProvider := aws.NewClientProvider(cfg, mainLogger)
+	defer func() {
+		if err := awsProvider.Close(); err != nil {
+			mainLogger.Error("Failed to close AWS provider", logger.String("error", err.Error()))
+		}
+	}()
+
+	// Initialize health check system
+	healthManager := health.NewManager("aws-monitor", version, mainLogger)
+	
+	// Register health checkers
+	healthManager.RegisterChecker(health.NewBasicChecker("aws-monitor", version))
+	healthManager.RegisterChecker(health.NewConfigChecker(cfg, mainLogger))
+	healthManager.RegisterChecker(health.NewAWSChecker(awsProvider, cfg, mainLogger))
+	
+	// Start health check manager
+	healthManager.Start(30 * time.Second)
+	defer healthManager.Stop()
+	
+	// Start health check HTTP server
+	healthServer := health.NewServer(healthManager, cfg.Global.HealthCheckPort, mainLogger)
+	if err := healthServer.Start(); err != nil {
+		mainLogger.Error("Failed to start health check server", logger.String("error", err.Error()))
+		os.Exit(1)
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := healthServer.Stop(ctx); err != nil {
+			mainLogger.Error("Failed to stop health check server", logger.String("error", err.Error()))
+		}
+	}()
+
+	mainLogger.Info("Health check server started", logger.Int("port", cfg.Global.HealthCheckPort))
+
+	// TODO: Initialize and start remaining application components
 	// - Metric collectors
 	// - OpenTelemetry exporter
-	// - Health check server
 	// - Scheduler
 
 	mainLogger.Info("Application startup complete")
