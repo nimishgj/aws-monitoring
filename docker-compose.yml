@@ -14,7 +14,7 @@ services:
       - "8888:8888"   # Prometheus metrics
       - "8889:8889"   # Prometheus exporter metrics
     networks:
-      - monitoring
+      - aws-monitoring
 
   # AWS Monitor Application
   aws-monitor:
@@ -32,30 +32,13 @@ services:
     depends_on:
       - otel-collector
     networks:
-      - monitoring
+      - aws-monitoring
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
-
-  # Prometheus (for testing metrics)
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    networks:
-      - monitoring
 
   # Grafana (for visualizing metrics)
   grafana:
@@ -68,11 +51,26 @@ services:
     volumes:
       - aws-grafana-storage:/var/lib/grafana
     networks:
-      - monitoring
+      - aws-monitoring
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    container_name: aws-monitor-clickhouse
+    restart: unless-stopped
+    environment:
+      - CLICKHOUSE_PASSWORD=admin
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - aws-grafana-storage:/var/lib/clickhouse
+    networks:
+      - aws-monitoring
+
 
 networks:
-  monitoring:
+  aws-monitoring:
     driver: bridge
 
 volumes:
+  aws-clickhouse-storage:
   aws-grafana-storage:

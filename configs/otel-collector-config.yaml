@@ -12,36 +12,63 @@ processors:
     send_batch_size: 1024
   memory_limiter:
     limit_mib: 512
+  resource/env:
+    attributes:
+    - key: environment
+      value: nimisha-local-mac
+      action: upsert
 
 exporters:
-  prometheus:
-    endpoint: "0.0.0.0:8889"
-    namespace: aws_monitor
-    const_labels:
-      service: aws-monitor
+  clickhouse:
+    endpoint: "tcp://aws-monitor-clickhouse:9000"
+    database: "otel"
+    logs_table_name: otel_logs
+    metrics_table_name: otel_metrics
+    username: default
+    password: "admin"
+    create_schema: true
   
-  logging:
-    loglevel: info
-  
-  # Uncomment and configure for your specific backends
-  # jaeger:
-  #   endpoint: jaeger:14250
-  #   tls:
-  #     insecure: true
-  
-  # prometheusremotewrite:
-  #   endpoint: "http://prometheus:9090/api/v1/write"
+  debug:
+    verbosity: detailed
 
 service:
   pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource/env]
+      exporters: [clickhouse]
+
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [prometheus, logging]
+      processors: [memory_limiter, batch, resource/env]
+      exporters: [clickhouse]
     
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch]
-      exporters: [logging]
+      processors: [memory_limiter, batch, resource/env]
+      exporters: [clickhouse]
   
   extensions: []
+  telemetry:
+    metrics:
+      readers:
+        - periodic:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: http://localhost:4318
+
+    logs:
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: http://localhost:4318
+    traces:
+      processors:
+        - batch:
+            exporter:
+              otlp:
+                protocol: http/protobuf
+                endpoint: http://localhost:4318
