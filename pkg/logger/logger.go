@@ -1,3 +1,4 @@
+// Package logger provides structured logging functionality with AWS-specific features.
 package logger
 
 import (
@@ -184,7 +185,7 @@ func (l *Logger) Sync() error {
 // WithFields creates a logger with structured fields
 func (l *Logger) WithFields(fields ...Field) *Logger {
 	return &Logger{
-		Logger: l.Logger.With(fields...),
+		Logger: l.With(fields...),
 		config: l.config,
 	}
 }

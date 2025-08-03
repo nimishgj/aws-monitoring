@@ -333,7 +333,7 @@ func TestFindConfigFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create test config: %v", err)
 	}
-	defer os.Remove(tmpConfig)
+	defer func() { _ = os.Remove(tmpConfig) }()
 
 	path, err := findConfigFile()
 	if err != nil {

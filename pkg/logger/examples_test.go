@@ -17,7 +17,7 @@ func ExampleNewLogger() {
 	if err != nil {
 		panic(err)
 	}
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	log.Info("Application started successfully",
 		logger.String("version", "1.0.0"),
@@ -32,7 +32,7 @@ func ExampleLogger_WithComponent() {
 	}
 
 	log, _ := logger.NewLogger(config)
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	// Create component-specific logger
 	dbLogger := log.WithComponent("database")
@@ -49,7 +49,7 @@ func ExampleLogger_LogAWSAPICall() {
 	}
 
 	log, _ := logger.NewLogger(config)
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	// Log successful AWS API call
 	log.LogAWSAPICall("ec2", "DescribeInstances", "us-east-1", 500*time.Millisecond, nil)
@@ -65,21 +65,21 @@ func ExampleLogger_LogMetricCollection() {
 	}
 
 	log, _ := logger.NewLogger(config)
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	// Log metric collection event
 	log.LogMetricCollection("ec2", "us-east-1", 42, 1500*time.Millisecond)
 }
 
-func ExampleGlobalLogging() {
+func Example_globalLogging() {
 	config := logger.Config{
 		Level:  "info",
 		Format: "text",
 	}
 
 	// Initialize global logger
-	logger.InitializeGlobal(config)
-	defer logger.Sync()
+	_ = logger.InitializeGlobal(config)
+	defer func() { _ = logger.Sync() }()
 
 	// Use global logging functions
 	logger.Info("Application starting",
@@ -106,7 +106,7 @@ func ExampleLogger_WithFields() {
 	}
 
 	log, _ := logger.NewLogger(config)
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	// Create logger with context fields
 	requestLogger := log.WithFields(

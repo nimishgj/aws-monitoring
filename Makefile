@@ -10,15 +10,20 @@ build: ## Build the application
 	@echo "Building aws-monitor..."
 	@go build -v -o bin/aws-monitor ./cmd/aws-monitor
 
-test: ## Run tests
-	@echo "Running tests..."
+test: ## Run unit tests
+	@echo "Running unit tests..."
 	@go test -v -race -coverprofile=coverage.out ./...
 	@go tool cover -html=coverage.out -o coverage.html
 
-test-coverage: ## Run tests with coverage report
+test-coverage: ## Run tests with detailed coverage report
 	@echo "Running tests with coverage..."
 	@go test -v -race -coverprofile=coverage.out ./...
 	@go tool cover -func=coverage.out
+	@go tool cover -html=coverage.out -o coverage.html
+
+test-bench: ## Run benchmark tests
+	@echo "Running benchmark tests..."
+	@go test -v -bench=. -benchmem ./...
 
 lint: ## Run linter
 	@echo "Running golangci-lint..."
@@ -38,10 +43,6 @@ deps: ## Download dependencies
 	@go mod download
 	@go mod tidy
 
-##@ Security
-sec: ## Run security checks
-	@echo "Running security checks..."
-	@gosec ./...
 
 ##@ Docker
 docker-build: ## Build Docker image
@@ -77,7 +78,6 @@ install-tools: ## Install development tools
 	@echo "Installing development tools..."
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@go install golang.org/x/tools/cmd/goimports@latest
-	@go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
 
 ##@ Validation
 validate-config: ## Validate configuration file

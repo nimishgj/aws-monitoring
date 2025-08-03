@@ -1,3 +1,4 @@
+// Package config provides configuration management for the aws-monitor application.
 package config
 
 import (
@@ -240,7 +241,7 @@ func validate(config *Config) error {
 }
 
 // registerCustomValidations registers custom validation rules
-func registerCustomValidations(v *validator.Validate) {
+func registerCustomValidations(_ *validator.Validate) {
 	// Add custom validation for duration fields if needed
 }
 

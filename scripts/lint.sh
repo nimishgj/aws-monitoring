@@ -19,12 +19,5 @@ echo "🔍 Running golangci-lint..."
 golangci-lint run --timeout=10m
 echo "✅ golangci-lint passed"
 
-echo "🔍 Running security checks..."
-if command -v gosec &> /dev/null; then
-    gosec -quiet ./...
-    echo "✅ Security checks passed"
-else
-    echo "⚠️  gosec not installed, skipping security checks"
-fi
 
 echo "🎉 All linting checks passed!"

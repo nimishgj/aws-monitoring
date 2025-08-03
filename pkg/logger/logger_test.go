@@ -95,12 +95,12 @@ func TestLoggerWithFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	// Log some messages
 	logger.Info("test info message", String("key", "value"))
 	logger.Error("test error message", String("error_key", "error_value"))
-	logger.Sync()
+	_ = logger.Sync()
 
 	// Check that files were created and contain expected content
 	if _, err := os.Stat(logFile); os.IsNotExist(err) {
@@ -174,7 +174,7 @@ func TestLoggerWithFields(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	// Test WithFields
 	componentLogger := logger.WithComponent("test-component")
@@ -204,7 +204,7 @@ func TestStructuredLoggingMethods(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	// Test structured logging methods
 	logger.LogStartup("1.0.0", "2023-01-01", "abc123")
@@ -283,7 +283,7 @@ func TestFieldHelpers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	// This should not panic
 	logger.Info("test message with all field types", fields...)
@@ -300,7 +300,7 @@ func TestJSONOutput(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	// Test that logger was created with JSON format
 	if logger.config.Format != "json" {
@@ -318,7 +318,7 @@ func TestTextOutput(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	// Test that logger was created with text format
 	if logger.config.Format != "text" {
@@ -336,7 +336,7 @@ func TestLogLevels(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	// These should not panic, even though debug/info might not be output
 	logger.Debug("debug message")
@@ -356,7 +356,7 @@ func BenchmarkLogger(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create logger: %v", err)
 	}
-	defer logger.Sync()
+	defer func() { _ = logger.Sync() }()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
