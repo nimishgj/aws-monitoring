@@ -8,6 +8,7 @@ help: ## Show this help message
 ##@ Development
 build: ## Build the application
 	@echo "Building aws-monitor..."
+	@mkdir -p bin
 	@go build -v -o bin/aws-monitor ./cmd/aws-monitor
 
 test: ## Run unit tests
